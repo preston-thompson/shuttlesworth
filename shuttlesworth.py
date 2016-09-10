@@ -29,6 +29,11 @@ def main():
             irc.send("PONG " + words[1])
             continue
 
+        if words[1] == "JOIN":
+            username = words[0][1:words[0].index("!")]
+            irc.send("MODE %s +o %s" % (channel, username))
+            continue
+
         if words[1] == "PRIVMSG" and words[2] == channel:
             message = text[text.index("PRIVMSG") + len("PRIVMSG " + channel + " :"):]
             log = open("log.txt", "a")
