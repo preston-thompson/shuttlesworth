@@ -24,14 +24,17 @@ def main():
     while 1:
         text = irc.receive()
         words = text.split()
+
         if text.find("PING") == 0:
             irc.send("PONG " + words[1])
             continue
+
         if words[1] == "PRIVMSG" and words[2] == channel:
-            message = text[text.index("PRIVMSG") + len("PRIVMSG " + channel + ":"):]
+            message = text[text.index("PRIVMSG") + len("PRIVMSG " + channel + " :"):]
             log = open("log.txt", "a")
             log.write(message)
             log.close()
+            continue
 
 if __name__ == "__main__":
     main()
