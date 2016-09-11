@@ -9,6 +9,8 @@ import markov
 stfu = False
 
 def main():
+    global stfu
+
     if len(sys.argv) != 5:
         print("usage: %s host port nick channel" % sys.argv[0])
         exit()
@@ -38,6 +40,7 @@ def main():
             irc.send("PONG " + words[1])
             continue
 
+        # Give operator status to anyone who joins the channel.
         if words[1] == "JOIN":
             username = words[0][1:words[0].index("!")]
             if username != nick:
@@ -67,8 +70,11 @@ def main():
 
             markov.record(message)
 
-            if not stfu and (message.find(nick) != -1 or random.randint(0, 10) == 1):
-                irc.send("PRIVMSG %s :%s" % (channel, markov.talk()))
+            if not stfu and (message.find(nick) != -1 or random.randint(0, 20) == 1):
+                word = nick
+                while word == nick:
+                    word = random.choice(message_words)
+                irc.send("PRIVMSG %s :%s" % (channel, markov.talk(word)))
 
             continue
 
