@@ -4,6 +4,9 @@ import random
 import sys
 
 import irc
+import markov
+
+stfu = False
 
 def main():
     if len(sys.argv) != 5:
@@ -16,6 +19,12 @@ def main():
     channel = sys.argv[4]
 
     random.seed()
+
+    print("initializing...")
+    log = open("log.txt", "r")
+    markov.init(log)
+    log.close()
+    print("complete!")
 
     irc.connect(server, port, nick)
 
@@ -31,14 +40,36 @@ def main():
 
         if words[1] == "JOIN":
             username = words[0][1:words[0].index("!")]
-            irc.send("MODE %s +o %s" % (channel, username))
+            if username != nick:
+                irc.send("MODE %s +o %s" % (channel, username))
             continue
 
         if words[1] == "PRIVMSG" and words[2] == channel:
             message = text[text.index("PRIVMSG") + len("PRIVMSG " + channel + " :"):]
+
+            if message.find(nick) == 0:
+                message_words = message.split()
+
+                if len(message_words) > 1:
+                    if message_words[1] == "stfu":
+                        irc.send("PRIVMSG %s :ok" % channel)
+                        stfu = True
+                        continue
+
+                    if message_words[1] == "talk":
+                        irc.send("PRIVMSG %s :ok" % channel)
+                        stfu = False
+                        continue
+
             log = open("log.txt", "a")
             log.write(message)
             log.close()
+
+            markov.record(message)
+
+            if not stfu and (message.find(nick) != -1 or random.randint(0, 10) == 1):
+                irc.send("PRIVMSG %s :%s" % (channel, markov.talk()))
+
             continue
 
 if __name__ == "__main__":

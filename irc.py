@@ -9,7 +9,7 @@ def send(s):
 
 def receive():
     text = sock.recv(1024)
-    print("received: " + text[:-2].decode("utf-8"))
+    print("received: " + text.rstrip().decode("utf-8"))
     return text.decode("utf-8")
 
 def connect(server, port, nick):
