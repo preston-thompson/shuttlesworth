@@ -49,9 +49,9 @@ def main():
 
         if words[1] == "PRIVMSG" and words[2] == channel:
             message = text[text.index("PRIVMSG") + len("PRIVMSG " + channel + " :"):]
+            message_words = message.split()
 
             if message.find(nick) == 0:
-                message_words = message.split()
 
                 if len(message_words) > 1:
                     if message_words[1] == "stfu":
@@ -70,7 +70,7 @@ def main():
 
             markov.record(message)
 
-            if not stfu and (message.find(nick) != -1 or random.randint(0, 20) == 1):
+            if not stfu and (nick in message or random.randint(0, 20) == 1):
                 word = nick
                 while word == nick:
                     word = random.choice(message_words)
