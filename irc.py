@@ -1,16 +1,21 @@
 import socket
 
 sock = None
-recv_buf = bytes()
+buf = str()
 
 def send(s):
     print("sending: " + s)
     sock.send(bytes(s, "utf-8") + b"\r\n")
 
 def receive():
-    text = sock.recv(1024)
-    print("received: " + text.rstrip().decode("utf-8"))
-    return text.decode("utf-8")
+    global buf
+    while "\r\n" not in buf:
+        text = sock.recv(1024).decode("utf-8")
+        buf += text
+        print("received: " + text)
+    rv = buf[:buf.index("\r\n")]
+    buf = buf[buf.index("\r\n") + 2:]
+    return rv
 
 def connect(server, port, nick):
     global sock
