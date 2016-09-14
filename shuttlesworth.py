@@ -6,31 +6,35 @@ import sys
 import irc
 import markov
 
-stfu = False
-
 def main():
-    global stfu
-
     if len(sys.argv) != 5:
         print("usage: %s host port nick channel" % sys.argv[0])
         exit()
 
-    server = sys.argv[1]
-    port = int(sys.argv[2])
-    nick = sys.argv[3]
-    channel = sys.argv[4]
+    bot = {
+        "stfu": False,
+        "server": sys.argv[1],
+        "port": int(sys.argv[2]),
+        "nick": sys.argv[3],
+        "channel": sys.argv[4],
+        "log": "log.txt",
+        "max_length": 400,
+    }
 
     random.seed()
 
-    print("initializing...")
     log = open("log.txt", "r")
-    markov.init(log)
+    while 1:
+        text = log.readline().rstrip()
+        if not text:
+            break
+        if bot["nick"] in text:
+            continue
+        markov.record(text)
     log.close()
-    print("complete!")
 
-    irc.connect(server, port, nick)
-
-    irc.send("JOIN %s" % channel)
+    irc.connect(bot["server"], bot["port"], bot["nick"])
+    irc.join(bot["channel"])
 
     while 1:
         text = irc.receive()
@@ -43,40 +47,40 @@ def main():
         # Give operator status to anyone who joins the channel.
         if words[1] == "JOIN":
             username = words[0][1:words[0].index("!")]
-            if username != nick:
-                irc.send("MODE %s +o %s" % (channel, username))
+            if username != bot["nick"]:
+                irc.mode(bot["channel"], username, "+o")
             continue
 
-        if words[1] == "PRIVMSG" and words[2] == channel:
-            message = text[text.index("PRIVMSG") + len("PRIVMSG " + channel + " :"):]
+        if words[1] == "PRIVMSG" and words[2] == bot["channel"]:
+            message = text[text.index("PRIVMSG") + len("PRIVMSG " + bot["channel"] + " :"):]
             message_words = message.split()
 
-            if message.find(nick) == 0:
+            if message.find("!%s" % bot["nick"]) == 0 and len(message_words) > 1:
+                if message_words[1] == "stfu":
+                    irc.privmsg(bot["channel"], "ok")
+                    bot["stfu"] = True
+                    continue
 
-                if len(message_words) > 1:
-                    if message_words[1] == "stfu":
-                        irc.send("PRIVMSG %s :ok" % channel)
-                        stfu = True
-                        continue
+                if message_words[1] == "talk":
+                    irc.privmsg(bot["channel"], "ok")
+                    bot["stfu"] = False
+                    continue
 
-                    if message_words[1] == "talk":
-                        irc.send("PRIVMSG %s :ok" % channel)
-                        stfu = False
-                        continue
+                if message_words[1] == "state":
+                    irc.privmsg(bot["channel"], str(bot))
+                    continue
 
             log = open("log.txt", "a")
-            log.write(message)
+            log.write(message + "\n")
             log.close()
 
-            markov.record(message)
+            if bot["nick"] not in message:
+                markov.record(message)
 
-            if not stfu and (nick in message or random.randint(0, 20) == 1):
-                word = nick
-                while word == nick:
-                    word = random.choice(message_words)
-                irc.send("PRIVMSG %s :%s" % (channel, markov.talk(word)))
-
-            continue
+            if not bot["stfu"] and bot["nick"] in message:
+                word = random.choice(message_words)
+                irc.privmsg(bot["channel"], markov.talk(word, bot["max_length"]))
+                continue
 
 if __name__ == "__main__":
     main()
