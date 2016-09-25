@@ -19,6 +19,7 @@ def main():
         "channel": sys.argv[4],
         "log": "log.txt",
         "max_length": 400,
+        "depth": 1,
     }
 
     random.seed()
@@ -28,9 +29,8 @@ def main():
         text = log.readline().rstrip()
         if not text:
             break
-        if bot["nick"] in text:
-            continue
-        markov.record(text)
+        if bot["nick"] not in text:
+            markov.record(text)
     log.close()
 
     irc.connect(bot["server"], bot["port"], bot["nick"])
@@ -79,6 +79,9 @@ def main():
 
             if not bot["stfu"] and bot["nick"] in message:
                 word = random.choice(message_words)
+                while bot["nick"] in word and len(message_words) > 1:
+                    word = random.choice(message_words)
+                print(word)
                 irc.privmsg(bot["channel"], markov.talk(word, bot["max_length"]))
                 continue
 
