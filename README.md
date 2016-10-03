@@ -1,10 +1,6 @@
 # shuttlesworth
 
-Goofy IRC chat bot.
+Goofy IRC chat bot. Tries to speak coherently. Gives stock market information.
 
 ## Todo
 * Only op certain usernames.
-
-## Bugs
-
-* Markov algorithm probably doesn't work the way I think it works.

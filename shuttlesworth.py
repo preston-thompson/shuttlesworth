@@ -5,6 +5,7 @@ import sys
 
 import irc
 import markov
+import stocks
 
 def main():
     if len(sys.argv) != 5:
@@ -61,13 +62,21 @@ def main():
                     bot["stfu"] = True
                     continue
 
-                if message_words[1] == "talk":
+                elif message_words[1] == "talk":
                     irc.privmsg(bot["channel"], "ok")
                     bot["stfu"] = False
                     continue
 
-                if message_words[1] == "state":
+                elif message_words[1] == "state":
                     irc.privmsg(bot["channel"], str(bot))
+                    continue
+
+                elif message_words[1] == "stock":
+                    irc.privmsg(bot["channel"], stocks.get_stock_info(message_words[2]))
+                    continue
+
+                else:
+                    irc.privmsg(bot["channel"], "what?")
                     continue
 
             log = open("log.txt", "a")
@@ -81,7 +90,6 @@ def main():
                 word = random.choice(message_words)
                 while bot["nick"] in word and len(message_words) > 1:
                     word = random.choice(message_words)
-                print(word)
                 irc.privmsg(bot["channel"], markov.talk(word, bot["max_length"]))
                 continue
 
