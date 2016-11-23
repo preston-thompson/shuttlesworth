@@ -5,7 +5,7 @@ buf = str()
 
 def send(s):
     print("send: " + s)
-    sock.send(bytes(s, "utf-8") + b"\r\n")
+    sock.send(bytes(s) + b"\r\n")
 
 def receive():
     global buf
@@ -35,4 +35,4 @@ def privmsg(recipient, message):
     send("PRIVMSG %s :%s" % (recipient, message))
 
 def mode(channel, recipient, mode):
-    send("MODE %s %s %s" % (channel, recipient, mode))
+    send("MODE %s %s %s" % (channel, mode, recipient))
