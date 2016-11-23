@@ -1,0 +1,7 @@
+server = "localhost "
+port = 6667
+nick = "shuttlesworth"
+channel = "#hello"
+log = "log.txt"
+max_length = 400
+depth = 1
