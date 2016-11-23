@@ -35,13 +35,6 @@ def main():
             irc.send("PONG " + words[1])
             continue
 
-        # Give operator status to anyone who joins the channel.
-        #if words[1] == "JOIN":
-            #username = words[0][1:words[0].index("!")]
-            #if username != config.nick:
-                #irc.mode(config.channel, username, "+o")
-            #continue
-
         if words[1] == "PRIVMSG" and words[2] == config.channel:
             message = text[text.index("PRIVMSG") + len("PRIVMSG " + config.channel + " :"):]
             message_words = message.split()
@@ -61,8 +54,12 @@ def main():
                     irc.privmsg(config.channel, str(state))
                     continue
 
-                elif message_words[1] == "stock":
+                elif message_words[1] == "stock" and len(message_words) == 3:
                     irc.privmsg(config.channel, stocks.get_stock_info(message_words[2]))
+                    continue
+
+                elif message_words[1] == "op" and len(message_words) == 3:
+                    irc.mode(config.channel, message_words[2], "+o")
                     continue
 
                 else:
