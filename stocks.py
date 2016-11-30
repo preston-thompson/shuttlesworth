@@ -1,4 +1,3 @@
-import csv
 import urllib2
 
 yahoo_url = "http://download.finance.yahoo.com/d/quotes.csv?s="
